@@ -20,13 +20,6 @@ The script was built as a mini-project to practice low-level networking and Pyth
   - Listens for DNS requests (`UDP/53`)
   - Spoofs DNS responses so queried domains resolve to the attacker's IP (`my_ip`)
 
-- **Request Logging**
-  - Logs each intercepted DNS query in memory
-  - Optionally encrypts and saves logs to a file on exit
-
-- **Encrypted Log Viewing**
-  - Supports a “view mode” where you can decrypt and display previously saved DNS logs using the CLI options
-
 ---
 
 ## How It Works (High-Level)
@@ -44,13 +37,7 @@ The script was built as a mini-project to practice low-level networking and Pyth
    - Sniffs DNS traffic on `udp port 53`
    - For each DNS query:
      - Extracts the requested domain
-     - Logs the source IP and domain
      - Crafts and sends a spoofed DNS response with `rdata` set to the attacker’s IP
-
-4. On `Ctrl+C`, if a `--log` path is provided:
-   - All logged entries are concatenated
-   - Encrypted using `cryptography.Fernet`
-   - Saved into the specified log file
 
 ---
 
