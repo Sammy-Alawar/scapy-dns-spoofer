@@ -38,6 +38,11 @@ The script was built as a mini-project to practice low-level networking and Pyth
    - For each DNS query:
      - Extracts the requested domain
      - Crafts and sends a spoofed DNS response with `rdata` set to the attacker’s IP
+       
+Note:
+To avoid breaking the victim’s internet connection, you must enable IP forwarding on the attacker machine:
+
+echo 1 | sudo tee /proc/sys/net/ipv4/ip_forward
 
 ---
 
